@@ -11,25 +11,25 @@
   
   <main>
     <form>
-      <sectionn>
+      <section>
         <h2>Contact Information</h2>
         
         <label>Name: <input type="text" name="name" required></label><br><br>
         <label>Phone: <input type="tel" name="phone" required></label><br><br>
         <label>Email: <input type="email" name="email" required></label><br><br>
-      </sectionn>
+      </section>
       
       
       <section>
         <h2>Select Pizza Size</h2>
         <label>
           Pizza Size:
-        <select name="Pizza Size" id="Select Size">
+        </label>
+        <select name="Pizza Size" id="SelectSize">
           <option>--Select Size--</option>
           <option>Medium</option>
           <option>Large</option>
           <option>XLarge</option>
-        </label>
         </select>
         <br><br>
       </section>
@@ -69,7 +69,10 @@
     
     
     <section>
-      <table border=1><label>List of my Favorite Games:</label>
+      
+      <label>List of my Favorite Games:</label>
+      <table border="1">
+      
       
       <thead>
         <tr><th>Developer</th>
