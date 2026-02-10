@@ -1,0 +1,141 @@
+body { 
+	background-color: white;
+}
+
+#menuItems {
+	position: fixed;
+	left: 0;
+	top: 0;
+	width: 240px;
+	background-color: black;
+	height: 100%;
+	z-index: 10;
+}
+
+#menuItems button {
+	width: 100%;
+	background-color: blue;
+	color: white;
+	padding: 20px;
+	font-size: 20px;
+	border: none;
+	cursor: pointer;
+	border: 1px solid black;
+	transition: background-color 0.3s;
+}
+
+#menuItems button:hover {
+	background-color: goldenrod;
+}
+
+#jumpMenu {
+	list-style: none;
+	margin: 0;
+	padding: 5px 0;
+	background-color: goldenrod;
+	display: none;
+	text-align: center;
+}
+
+#recentArticles:hover + #jumpMenu,
+#jumpMenu:hover {
+	display: block;
+}
+
+#jumpMenu a {
+	display: block;
+	padding: 8px 15px;
+
+	text-decoration: none;
+	font-size: 18px;
+}
+
+#jumpMenu a:hover {
+	background-color: blue;
+	color: black;
+}
+
+header {
+	text-align: center;
+	position: sticky;
+	top: 0;
+	margin-left: 220px;
+	p {
+		background-color: red;
+		padding-top: 40px;
+		padding-bottom: 40px;
+		font-family: Arial, Helvetica, sans-serif;
+		font-size: 32px;
+		margin-bottom: 0px;
+	}
+
+	nav {
+		background-color: black;
+		button {
+			background-color: blue;
+			color: white;
+			padding: 20px;
+			margin-left: 20px;
+			margin-right: 20px;
+			font-size: 24px;
+		}
+	}
+}
+
+
+h1 {
+	text-align: center;
+	margin-left: 220px;
+}
+
+#thanks {
+	float: right;
+	position: sticky;
+	top: 0;
+	bottom: 0px;
+  	right: 0px;
+	width: 200px;
+	background-color: lightblue;
+  	font-size: 20px;
+	padding: 20px;
+}
+
+#container {
+	margin-left: 220px;
+	margin-right: 20px;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	article {
+		width: 20%;
+		padding: 20px;
+		text-align: justify;
+		color: grey;
+
+		overflow: hidden;
+		transition: color 2s, font-size 2s, width 2s;
+		p:first-of-type::first-letter {
+			font-size: 36px;
+		}
+	}
+}
+
+#container article:hover {
+	color: black;
+	width: 25%;
+	font-size: 1.3em;
+}
+
+
+#container article a::after {
+	content: "";
+	display: inline-block;
+	width: 20px;
+	height: 20px;
+	margin-left: 6px;
+	background-image: url("arrowarrow.png");
+	background-size: contain;
+	background-repeat: no-repeat;
+	vertical-align: middle;
+}
+
