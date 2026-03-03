@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pokémon Team Builder</title>
+
+    <style>
+
+    	body {
+    		font-family: Arial, sans-serif;
+    		text-align: center;
+		background-color: lightblue;
+	}
+
+	.pokemon-display img {
+    		width: 150px;
+	}
+
+	.moves-section select {
+    		margin: 5px;
+	}
+
+	.team-container {
+    		display: flex;
+    		justify-content: center;
+   		flex-wrap: wrap;
+    		gap: 20px;
+	}
+
+	.team-card {
+    		border: 2px solid black;
+    		padding: 10px;
+   		width: 150px;
+	}
+
+
+    </style>
+    
+</head>
+<body>
+
+    <h1>Pokémon Team Builder</h1>
+
+    <section class="search-section">
+        <input type="text" id="pokemonInput" placeholder="Enter Pokémon name/ID">
+        <button onclick="fetchPokemon()">Fetch Pokémon</button>
+    </section>
+
+    <section id="pokemonDisplay" class="pokemon-display"></section>
+
+    <section id="moveSelectors" class="moves-section";">
+        <h3>Select 4 Moves</h3>
+        <select id="move1"></select>
+        <select id="move2"></select>
+        <select id="move3"></select>
+        <select id="move4"></select>
+        <br><br>
+        <button onclick="addToTeam()">Add To Team</button>
+    </section>
+
+    <h2>Your Team</h2>
+    <section id="teamContainer" class="team-container"></section>
+
+    <script src="pokemonJS.js"></script>
+</body>
+</html>
