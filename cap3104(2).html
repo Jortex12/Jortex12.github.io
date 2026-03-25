@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shared Inventory</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: #eef2f7;
+    color: #333;
+}
+
+/* Screens */
+.screen {
+    display: none;
+    padding: 16px;
+    max-width: 500px;
+    margin: auto;
+}
+.active { display: block; }
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* Buttons */
+button {
+    padding: 10px 14px;
+    font-size: 14px;
+    border: none;
+    border-radius: 6px;
+    background: #4a90e2;
+    color: white;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #357bd8;
+}
+
+/* Cards */
+.card {
+    background: white;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* Status colors */
+.status {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    color: white;
+}
+.instock { background: #4caf50; }
+.low { background: #ff9800; }
+.out { background: #f44336; }
+
+/* Inputs */
+input, select {
+    padding: 10px;
+    width: 100%;
+    margin: 8px 0;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+
+/* Quantity UI */
+.qty-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.qty-box button {
+    width: 32px;
+    height: 32px;
+    font-weight: bold;
+}
+
+.qty-display {
+    min-width: 24px;
+    text-align: center;
+    font-weight: bold;
+}
+
+/* Member inputs */
+.member-input {
+    display: block;
+}
+
+/* ✅ Checkbox fix */
+.checkbox-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    margin: 10px 0;
+}
+
+.checkbox-row input {
+    width: auto;
+    margin: 0;
+}
+</style>
+</head>
+
+<body>
+
+<!-- GROUPS -->
+<div id="groupsPage" class="screen active">
+    <div class="header">
+        <h2>Groups</h2>
+        <button onclick="showPage('addGroupPage')">+ Add Group</button>
+    </div>
+    <div id="groupsList"></div>
+</div>
+
+<!-- ADD GROUP -->
+<div id="addGroupPage" class="screen">
+    <h2>Add Group</h2>
+
+    <input id="groupName" placeholder="Group Name">
+
+    <h4>Members (not saved)</h4>
+    <div id="membersContainer">
+        <input class="member-input" placeholder="Member name">
+    </div>
+    <button onclick="addMemberField()">+ Add Member</button>
+
+    <br><br>
+    <button onclick="addGroup()">Create</button>
+    <button onclick="showPage('groupsPage')">Cancel</button>
+</div>
+
+<!-- INVENTORY -->
+<div id="inventoryPage" class="screen">
+    <div class="header">
+        <button onclick="showPage('groupsPage')">←</button>
+        <h2 id="groupTitle"></h2>
+        <button onclick="showPage('addItemPage')">+ Add Item</button>
+    </div>
+
+    <div id="itemsList"></div>
+    <button onclick="sortItems()">Sort (Low → High)</button>
+</div>
+
+<!-- ADD ITEM -->
+<div id="addItemPage" class="screen">
+    <h2>Add Item</h2>
+
+    <input id="itemName" placeholder="Item name">
+
+    <div class="qty-box">
+        <button onclick="changeQty(-1)">-</button>
+        <span id="qtyDisplay" class="qty-display">1</span>
+        <button onclick="changeQty(1)">+</button>
+    </div>
+
+    <select id="status">
+        <option>In Stock</option>
+        <option>Low</option>
+        <option>Out</option>
+    </select>
+
+    <!-- ✅ FIXED POSITION -->
+    <div class="checkbox-row">
+        <input type="checkbox" id="perishable" onchange="toggleDate()">
+        <label for="perishable">Perishable</label>
+    </div>
+
+    <input type="date" id="expiry" style="display:none">
+
+    <br><br>
+    <button onclick="addItem()">Add Item</button>
+    <button onclick="showPage('inventoryPage')">Cancel</button>
+</div>
+
+<script>
+
+/* ---------- INITIAL DATA ---------- */
+let data = JSON.parse(localStorage.getItem("inventoryApp")) || {
+    groups: [
+        {
+            name: "Dorm 1",
+            items: [
+                { name: "Dish Soap", qty: 0, status: "Out", statusClass: "out" },
+                { name: "Trash Bags", qty: 2, status: "Low", statusClass: "low" },
+                { name: "Pasta", qty: 4, status: "In Stock", statusClass: "instock" }
+            ]
+        },
+        {
+            name: "Family House",
+            items: [
+                { name: "Milk", qty: 1, status: "Low", statusClass: "low" },
+                { name: "Detergent", qty: 3, status: "In Stock", statusClass: "instock" }
+            ]
+        }
+    ]
+};
+
+let currentGroupIndex = null;
+let quantity = 1;
+
+/* ---------- UTIL ---------- */
+function save() {
+    localStorage.setItem("inventoryApp", JSON.stringify(data));
+}
+
+function showPage(page) {
+    document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+    document.getElementById(page).classList.add("active");
+
+    if (page === "groupsPage") renderGroups();
+    if (page === "inventoryPage") renderItems();
+}
+
+/* ---------- GROUPS ---------- */
+function renderGroups() {
+    const list = document.getElementById("groupsList");
+    list.innerHTML = "";
+
+    data.groups.forEach((g, i) => {
+        const div = document.createElement("div");
+        div.className = "card";
+
+        /* ✅ FIXED: button on right */
+        div.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                <span>${g.name}</span>
+                <button onclick="openGroup(${i})">></button>
+            </div>
+        `;
+
+        list.appendChild(div);
+    });
+}
+
+function addMemberField() {
+    const container = document.getElementById("membersContainer");
+    const input = document.createElement("input");
+    input.placeholder = "Member name";
+    input.className = "member-input";
+    container.appendChild(input);
+}
+
+function addGroup() {
+    const name = document.getElementById("groupName").value;
+    if (!name) return;
+
+    data.groups.push({ name, items: [] });
+    save();
+
+    document.getElementById("groupName").value = "";
+    document.getElementById("membersContainer").innerHTML =
+        '<input class="member-input" placeholder="Member name">';
+
+    showPage("groupsPage");
+}
+
+function openGroup(i) {
+    currentGroupIndex = i;
+    document.getElementById("groupTitle").innerText = data.groups[i].name;
+    showPage("inventoryPage");
+}
+
+/* ---------- ITEMS ---------- */
+function renderItems() {
+    const list = document.getElementById("itemsList");
+    list.innerHTML = "";
+
+    data.groups[currentGroupIndex].items.forEach((item, i) => {
+        const div = document.createElement("div");
+        div.className = "card";
+
+        div.innerHTML = `
+            <span><strong>${item.name}</strong></span>
+            <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                <div class="qty-box">
+                    <button onclick="updateQty(${i}, -1)">-</button>
+                    <span class="qty-display">${item.qty}</span>
+                    <button onclick="updateQty(${i}, 1)">+</button>
+                </div>
+                <span class="status ${item.statusClass}">${item.status}</span>
+            </div>
+        `;
+        list.appendChild(div);
+    });
+}
+
+function updateQty(i, change) {
+    let item = data.groups[currentGroupIndex].items[i];
+    item.qty += change;
+    if (item.qty < 0) item.qty = 0;
+
+    if (item.qty === 0) {
+        item.status = "Out";
+        item.statusClass = "out";
+    } else if (item.qty <= 2) {
+        item.status = "Low";
+        item.statusClass = "low";
+    } else {
+        item.status = "In Stock";
+        item.statusClass = "instock";
+    }
+
+    save();
+    renderItems();
+}
+
+function sortItems() {
+    data.groups[currentGroupIndex].items.sort((a,b) => a.qty - b.qty);
+    renderItems();
+}
+
+/* ---------- ADD ITEM ---------- */
+function changeQty(val) {
+    quantity += val;
+    if (quantity < 0) quantity = 0;
+    document.getElementById("qtyDisplay").innerText = quantity;
+}
+
+function addItem() {
+    const name = document.getElementById("itemName").value;
+    const status = document.getElementById("status").value;
+
+    if (!name) return;
+
+    let statusClass = status === "Out" ? "out" :
+                      status === "Low" ? "low" : "instock";
+
+    data.groups[currentGroupIndex].items.push({
+        name,
+        qty: quantity,
+        status,
+        statusClass
+    });
+
+    save();
+
+    quantity = 1;
+    document.getElementById("qtyDisplay").innerText = quantity;
+    document.getElementById("itemName").value = "";
+
+    showPage("inventoryPage");
+}
+
+function toggleDate() {
+    document.getElementById("expiry").style.display =
+        document.getElementById("perishable").checked ? "block" : "none";
+}
+
+/* ---------- INIT ---------- */
+renderGroups();
+
+</script>
+
+</body>
+</html>
